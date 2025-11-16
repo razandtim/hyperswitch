@@ -29,6 +29,7 @@ pub enum SetMetaDataRequest {
     IsChangePasswordRequired,
     OnboardingSurvey(OnboardingSurvey),
     ReconStatus(ReconStatus),
+    DisplayMode(DisplayMode),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -115,6 +116,14 @@ pub struct ReconStatus {
     pub is_processor_data_set: bool,
 }
 
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum DisplayMode {
+    System,
+    Light,
+    Dark,
+}
+
 #[derive(Debug, serde::Deserialize, EnumString, serde::Serialize)]
 pub enum GetMetaDataRequest {
     ProductionAgreement,
@@ -141,6 +150,7 @@ pub enum GetMetaDataRequest {
     IsChangePasswordRequired,
     OnboardingSurvey,
     ReconStatus,
+    DisplayMode,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -180,4 +190,5 @@ pub enum GetMetaDataResponse {
     IsChangePasswordRequired(bool),
     OnboardingSurvey(Option<OnboardingSurvey>),
     ReconStatus(Option<ReconStatus>),
+    DisplayMode(Option<DisplayMode>),
 }

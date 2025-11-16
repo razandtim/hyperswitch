@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display Mode Settings - Vanilla JS</title>
+  <style>
+    /* Base styles */
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --border-color: #e9ecef;
+      --shadow-color: rgba(0, 0, 0, 0.05);
+      --hover-bg: #f1f3f5;
+      --primary-color: #0066ff;
+      --primary-bg: #e6f2ff;
+      --primary-shadow: rgba(0, 102, 255, 0.2);
+      --error-bg: #fee2e2;
+      --error-text: #991b1b;
+    }
+
+    body.dark-theme {
+      --bg-primary: #0f0f0f;
+      --bg-secondary: #1a1a1a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #9ca3af;
+      --border-color: #2d2d2d;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+      --hover-bg: #262626;
+      --primary-color: #3b82f6;
+      --primary-bg: #1e3a5f;
+      --primary-shadow: rgba(59, 130, 246, 0.2);
+      --error-bg: rgba(220, 38, 38, 0.15);
+      --error-text: #ef4444;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .container {
+      margin-bottom: 30px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 24px;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    h1 {
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .settings-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 8px 0;
+    }
+
+    .settings-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0 0 20px 0;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .info-label {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .info-value {
+      color: var(--text-secondary);
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-secondary);
+    }
+
+    .error-message {
+      background: var(--error-bg);
+      color: var(--error-text);
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .mode-options {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mode-option {
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+      background: var(--bg-primary);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      font-size: 16px;
+    }
+
+    .mode-option:hover {
+      border-color: var(--primary-color);
+      background: var(--hover-bg);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px var(--shadow-color);
+    }
+
+    .mode-option.active {
+      border-color: var(--primary-color);
+      background: var(--primary-bg);
+      box-shadow: 0 2px 8px var(--primary-shadow);
+    }
+
+    .mode-option:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+
+    .mode-icon {
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .mode-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mode-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .mode-description {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Profile Settings</h1>
+  <p class="subtitle">Manage your profile settings here</p>
+
+  <!-- User Info Container -->
+  <div class="container">
+    <h3 class="settings-title">User Info</h3>
+    <div class="user-info">
+      <div class="info-row">
+        <span class="info-label">Name:</span>
+        <span class="info-value">Test</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Email:</span>
+        <span class="info-value">test@test.ro</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Password:</span>
+        <span class="info-value">********</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Display Mode Settings Container -->
+  <div class="container" id="display-settings-container">
+    <h3 class="settings-title">Display</h3>
+    <p class="settings-description">Choose your mode</p>
+    
+    <div id="error-container"></div>
+    <div id="mode-options-container" class="loading-state">Loading...</div>
+  </div>
+
+  <script>
+    // Configuration
+    const API_BASE_URL = 'http://localhost:8080';
+    
+    // State
+    let currentMode = 'system';
+    let authToken = null;
+
+    // Get auth token (modify based on your auth implementation)
+    function getAuthToken() {
+      // Try to get from localStorage or sessionStorage
+      authToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      
+      // For demo purposes, you can set it manually here:
+      // authToken = 'YOUR_JWT_TOKEN_HERE';
+      
+      return authToken;
+    }
+
+    // Apply theme to document
+    function applyTheme(mode) {
+      let actualTheme = 'light';
+
+      if (mode === 'system') {
+        // Detect system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        actualTheme = prefersDark ? 'dark' : 'light';
+      } else {
+        actualTheme = mode;
+      }
+
+      // Apply theme class
+      if (actualTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
+      }
+
+      // Store for persistence
+      localStorage.setItem('theme', actualTheme);
+      localStorage.setItem('theme_preference', mode);
+    }
+
+    // Fetch current display mode
+    async function fetchDisplayMode() {
+      try {
+        const token = getAuthToken();
+        
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/user/data/list?keys=display_mode`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const mode = data[0]?.DisplayMode || 'system';
+        
+        currentMode = mode;
+        applyTheme(mode);
+        renderModeOptions();
+      } catch (error) {
+        console.error('Error fetching display mode:', error);
+        showError(`Failed to load display preference: ${error.message}`);
+        // Fallback to system
+        currentMode = 'system';
+        applyTheme('system');
+        renderModeOptions();
+      }
+    }
+
+    // Update display mode
+    async function updateDisplayMode(newMode) {
+      try {
+        const token = getAuthToken();
+        
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/user/data`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ DisplayMode: newMode }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        currentMode = newMode;
+        applyTheme(newMode);
+        renderModeOptions();
+        clearError();
+      } catch (error) {
+        console.error('Error updating display mode:', error);
+        showError(`Failed to update display preference: ${error.message}`);
+      }
+    }
+
+    // Render mode options
+    function renderModeOptions() {
+      const container = document.getElementById('mode-options-container');
+      
+      const modes = [
+        { value: 'system', label: 'System', icon: '🖥️', description: 'Follow system settings' },
+        { value: 'light', label: 'Light', icon: '☀️', description: 'Light theme' },
+        { value: 'dark', label: 'Dark', icon: '🌙', description: 'Dark theme' },
+      ];
+
+      container.className = 'mode-options';
+      container.innerHTML = modes.map(mode => `
+        <button
+          class="mode-option ${currentMode === mode.value ? 'active' : ''}"
+          onclick="updateDisplayMode('${mode.value}')"
+          aria-label="Set display mode to ${mode.label}"
+          aria-pressed="${currentMode === mode.value}"
+        >
+          <span class="mode-icon" aria-hidden="true">${mode.icon}</span>
+          <div class="mode-content">
+            <span class="mode-label">${mode.label}</span>
+            <span class="mode-description">${mode.description}</span>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    // Show error message
+    function showError(message) {
+      const errorContainer = document.getElementById('error-container');
+      errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+    }
+
+    // Clear error message
+    function clearError() {
+      const errorContainer = document.getElementById('error-container');
+      errorContainer.innerHTML = '';
+    }
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (currentMode === 'system') {
+        applyTheme('system');
+      }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchDisplayMode();
+    });
+  </script>
+</body>
+</html>
+

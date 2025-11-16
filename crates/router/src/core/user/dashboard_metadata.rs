@@ -119,6 +119,7 @@ fn parse_set_request(data_enum: api::SetMetaDataRequest) -> UserResult<types::Me
             Ok(types::MetaData::OnboardingSurvey(req))
         }
         api::SetMetaDataRequest::ReconStatus(req) => Ok(types::MetaData::ReconStatus(req)),
+        api::SetMetaDataRequest::DisplayMode(req) => Ok(types::MetaData::DisplayMode(req)),
     }
 }
 
@@ -148,6 +149,7 @@ fn parse_get_request(data_enum: api::GetMetaDataRequest) -> DBEnum {
         api::GetMetaDataRequest::IsChangePasswordRequired => DBEnum::IsChangePasswordRequired,
         api::GetMetaDataRequest::OnboardingSurvey => DBEnum::OnboardingSurvey,
         api::GetMetaDataRequest::ReconStatus => DBEnum::ReconStatus,
+        api::GetMetaDataRequest::DisplayMode => DBEnum::DisplayMode,
     }
 }
 
@@ -234,6 +236,10 @@ fn into_response(
         DBEnum::ReconStatus => {
             let resp = utils::deserialize_to_response(data)?;
             Ok(api::GetMetaDataResponse::ReconStatus(resp))
+        }
+        DBEnum::DisplayMode => {
+            let resp = utils::deserialize_to_response(data)?;
+            Ok(api::GetMetaDataResponse::DisplayMode(resp))
         }
     }
 }
@@ -652,6 +658,31 @@ async fn insert_metadata(
                     data,
                 )
                 .await;
+            }
+            metadata
+        }
+        types::MetaData::DisplayMode(data) => {
+            let mut metadata = utils::insert_user_scoped_metadata_to_db(
+                state,
+                user.user_id.clone(),
+                user.merchant_id.clone(),
+                user.org_id.clone(),
+                metadata_key,
+                data.clone(),
+            )
+            .await;
+
+            if utils::is_update_required(&metadata) {
+                metadata = utils::update_user_scoped_metadata(
+                    state,
+                    user.user_id,
+                    user.merchant_id,
+                    user.org_id,
+                    metadata_key,
+                    data,
+                )
+                .await
+                .change_context(UserErrors::InternalServerError);
             }
             metadata
         }
